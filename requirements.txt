@@ -1,0 +1,9 @@
+selenium
+python-dotenv
+pillow
+imagehash
+scikit-image
+numpy
+opencv-python
+openai
+argparse
