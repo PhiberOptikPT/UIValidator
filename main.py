@@ -42,16 +42,16 @@ def main():
     elif args.mode == 'new':
         capture_screenshots(base_url, old_release, new_release)
     elif args.mode == 'existing':
-        if directory_is_empty(FOLDER_NEW) or directory_is_empty(FOLDER_OLD):
+        if directory_is_empty(FOLDER_OLD) or directory_is_empty(FOLDER_NEW):
             print("Existing screenshots not found. Capturing new screenshots.")
             capture_screenshots(base_url, old_release, new_release)
     try:
         if args.openai:
-            compare_screenshots_openai(FOLDER_NEW, FOLDER_OLD)
+            compare_screenshots_openai(FOLDER_OLD, FOLDER_NEW)
         else:
-            compare_screenshots_offline(FOLDER_NEW, FOLDER_OLD)
+            compare_screenshots_offline(FOLDER_OLD, FOLDER_NEW)
     except Exception as e:
-        return f"Comparison failed: {e}"
+        print(f"Comparison failed: {e}")
 
 if __name__ == "__main__":
     main()

@@ -90,6 +90,5 @@ def compare_screenshots_openai(old_screenshots, new_screenshots):
 
     for old_file, new_file in zip(old_files, new_files):
         old_path = os.path.join(old_screenshots, old_file)
-        new_path = os.path.join(new_screenshots, new_file)
-        
+        new_path = os.path.join(new_screenshots, new_file)        
         compare_screenshot_pair_openai(old_path, new_path)
