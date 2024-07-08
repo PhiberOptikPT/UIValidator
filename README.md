@@ -92,6 +92,26 @@ Options:
    - In OpenAI mode, it uses GPT to analyze and describe the UI inconsistencies.
 4. Results are saved in the `screenshots/diff/` directory.
 
+## Image Comparison Metrics
+
+This project includes functionality to compare images using two metrics: `hash_diff` and `ssim_score`.
+
+### `hash_diff`
+
+Represents the difference between perceptual hashes of two images. This value is calculated using perceptual hashing techniques, which generate a hash value that uniquely represents the content of an image. The `hash_diff` is used to quickly detect visual differences without a pixel-by-pixel comparison.
+
+- **Low Value**: Indicates higher similarity between images.
+- **High Value**: Suggests more significant differences between images.
+
+### `ssim_score`
+
+Structural Similarity Index Measure (SSIM) quantifies the similarity between two images based on structural information, luminance, and contrast. The SSIM score provides a measure that aligns with human perceptual differences.
+
+- **Range**: Values range from -1 to 1.
+  - **1**: Perfect similarity.
+  - **0**: No similarity.
+  - **Negative Values**: Indicate complete dissimilarity.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
