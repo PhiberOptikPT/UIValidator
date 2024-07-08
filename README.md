@@ -88,3 +88,7 @@ Options:
    - In offline mode, it generates a visual representation of the differences.
    - In OpenAI mode, it uses GPT to analyze and describe the UI inconsistencies.
 4. Results are saved in the `screenshots/diff/` directory.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
