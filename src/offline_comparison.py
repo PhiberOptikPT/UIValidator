@@ -16,7 +16,7 @@ def compare_screenshot_pair_offline(old_path, new_path):
         
         diff_dir = "screenshots/diff"
         os.makedirs(diff_dir, exist_ok=True)
-        diff_path = os.path.join(diff_dir, f"diff_{os.path.basename(new_path)}")
+        diff_path = os.path.join(diff_dir, os.path.basename(new_path))
         diff_img.save(diff_path)
         
         print(f"Differences detected. Diff image saved to: {diff_path}")

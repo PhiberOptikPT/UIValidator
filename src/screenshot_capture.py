@@ -11,7 +11,6 @@ from urllib.parse import urljoin
 load_dotenv()
 
 # Configuration
-BASE_URL = os.getenv("BASE_URL")
 USERNAME = os.getenv("PORTAL_USERNAME")
 PASSWORD = os.getenv("PORTAL_PASSWORD")
 
@@ -25,8 +24,8 @@ def setup_driver():
     chrome_options.add_argument("--window-size=1920,1080")
     return webdriver.Chrome(options=chrome_options)
 
-def login(driver):
-    driver.get(urljoin(BASE_URL, "master/portal/"))
+def login(base_url, driver):
+    driver.get(urljoin(base_url, "master/portal/"))
 
     # Wait for username field and enter username
     username_field = WebDriverWait(driver, 10).until(
@@ -41,7 +40,7 @@ def login(driver):
     # Click login button
     login_button = driver.find_element(By.ID, "loginBtn")
     login_button.click()
-    
+
     # Wait for login to complete (adjust the selector as needed)
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.ID, "sigma_main_panel"))
@@ -84,8 +83,11 @@ def capture_screenshots(base_url, old_relase, new_release):
     new_url = urljoin(base_url, new_release)
 
     try:
-        login(driver)
+        print("Initiating login")
+        login(base_url, driver)
+        print("Login completed successfully")
 
+        print("Initiating screenshot capture")
         for _, path in enumerate(PATHS_TO_SCREENSHOT):
             filename = get_filename_from_path(path)
             

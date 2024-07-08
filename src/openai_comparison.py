@@ -1,3 +1,4 @@
+import base64
 import os
 import openai
 from dotenv import load_dotenv
@@ -9,6 +10,10 @@ load_dotenv()
 # Set up OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+
 def analyze_with_openai(old_path, new_path):
     """Analyze images using OpenAI's GPT-4 with vision"""
     prompt = """
@@ -16,18 +21,30 @@ def analyze_with_openai(old_path, new_path):
     Enumerate the UI inconsistencies present in the new image that are not in the old image. 
     List the inconsistencies in bullet points only, with no additional text.
     """
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4-vision-preview",
+
+    # Load and encode the images
+    old_image_base64 = encode_image(old_path)
+    new_image_base64 = encode_image(new_path)
+
+    client = openai.OpenAI()
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
         messages=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"file://{old_path}", "detail": "high"}},
-                    {"type": "image_url", "image_url": {"url": f"file://{new_path}", "detail": "high"}}
-                ],
-            }
+                {
+                    "role": "user",
+                    "content": prompt
+                },
+                {
+                    "role": "system",
+                    "name": "old_image",
+                    "content": f"data:image/jpeg;base64,{old_image_base64}"
+                },
+                {
+                    "role": "system",
+                    "name": "new_image",
+                    "content": f"data:image/jpeg;base64,{new_image_base64}"
+                }
         ],
         max_tokens=300,
     )
@@ -44,22 +61,35 @@ def compare_screenshot_pair_openai(old_path, new_path):
     ssim_score, _ = compare_images_ssim(old_img, new_img)
     print(f"SSIM score for {os.path.basename(new_path)}: {ssim_score}")
     
-    if hash_diff > 0.1 or ssim_score < 0.95:  # Adjust thresholds as needed
+    if hash_diff > 0.1 or ssim_score < 1:  # Adjust thresholds as needed
         inconsistencies = analyze_with_openai(old_path, new_path)
-        print(f"UI Inconsistencies for {os.path.basename(new_path)}:")
-        print(inconsistencies)
-    else:
-        print(f"No significant UI changes detected for {os.path.basename(new_path)}.")
+        filename = os.path.basename(new_path)
 
-def compare_screenshots_openai():
-    old_dir = "screenshots/old"
-    new_dir = "screenshots/new"
-    
-    for filename in os.listdir(new_dir):
-        old_path = os.path.join(old_dir, filename)
-        new_path = os.path.join(new_dir, filename)
+        write_comparison_results(filename, hash_diff, ssim_score, inconsistencies)
+        print(f"UI Inconsistencies found for {filename}!")
+
+def write_comparison_results(filename, hash_diff, ssim_score, inconsistencies=None):
+    """Write comparison results to a file"""
+    with open(f"screenshots/diff/{filename}.txt", 'a') as f:
+        f.write(f"Results for {filename}:\n")
+        f.write(f"Image hash difference: {hash_diff}\n")
+        f.write(f"SSIM score: {ssim_score}\n")
         
-        if os.path.exists(old_path):
-            compare_screenshot_pair_openai(old_path, new_path)
+        if inconsistencies:
+            f.write("UI Inconsistencies:\n")
+            f.write(inconsistencies)
+            f.write("\n")
         else:
-            print(f"No old version found for {filename}")
+            f.write("No significant UI changes detected.\n")
+        
+        f.write("\n")
+
+def compare_screenshots_openai(old_screenshots, new_screenshots):
+    old_files = os.listdir(old_screenshots)
+    new_files = os.listdir(new_screenshots)
+
+    for old_file, new_file in zip(old_files, new_files):
+        old_path = os.path.join(old_screenshots, old_file)
+        new_path = os.path.join(new_screenshots, new_file)
+        
+        compare_screenshot_pair_openai(old_path, new_path)

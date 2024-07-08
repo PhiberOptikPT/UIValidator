@@ -12,11 +12,14 @@ sys.path.append(str(src_path))
 
 load_dotenv()
 
+FOLDER_NEW = "screenshots/new"
+FOLDER_OLD = "screenshots/old"
+
 def clean_screenshots():
-    for file in os.listdir("screenshots/new"):
-        os.remove(os.path.join("screenshots", file))
-    for file in os.listdir("screenshots/old"):
-        os.remove(os.path.join("screenshots", file))
+    for file in os.listdir(FOLDER_NEW):
+        os.remove(os.path.join(FOLDER_NEW, file))
+    for file in os.listdir(FOLDER_OLD):
+        os.remove(os.path.join(FOLDER_OLD, file))
     print("All existing screenshots removed.")
 
 def directory_is_empty(path):
@@ -32,9 +35,6 @@ def main():
     base_url = os.getenv("BASE_URL")
     old_release = os.getenv("OLD_RELEASE")
     new_release = os.getenv("NEW_RELEASE")
-
-    folder_new = "screenshots/new"
-    folder_old = "screenshots/old"
     
     if args.mode == 'clean':
         clean_screenshots()
@@ -42,14 +42,16 @@ def main():
     elif args.mode == 'new':
         capture_screenshots(base_url, old_release, new_release)
     elif args.mode == 'existing':
-        if directory_is_empty(folder_new) or directory_is_empty(folder_old):
+        if directory_is_empty(FOLDER_NEW) or directory_is_empty(FOLDER_OLD):
             print("Existing screenshots not found. Capturing new screenshots.")
             capture_screenshots(base_url, old_release, new_release)
-    
-    if args.openai:
-        compare_screenshots_openai()
-    else:
-        compare_screenshots_offline(folder_new, folder_old)
+    try:
+        if args.openai:
+            compare_screenshots_openai(FOLDER_NEW, FOLDER_OLD)
+        else:
+            compare_screenshots_offline(FOLDER_NEW, FOLDER_OLD)
+    except Exception as e:
+        return f"Comparison failed: {e}"
 
 if __name__ == "__main__":
     main()
