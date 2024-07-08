@@ -6,7 +6,7 @@ This tool automates the process of capturing and comparing screenshots across di
 
 - Automated screenshot capture using Selenium WebDriver
 - Comparison of screenshots using perceptual hashing and structural similarity index (SSIM)
-- Optional AI-powered analysis of UI changes using OpenAI's GPT model
+- Optional AI-powered analysis of UI changes using OpenAI's GPT model or Claude
 - Offline comparison with visual difference highlighting
 - Flexible screenshot handling modes (new, existing, clean)
 
@@ -56,16 +56,19 @@ Create a `.env` file in the project root and add the following:
     PORTAL_PASSWORD=<your_password>
     SCREENSHOT_PATHS=<comma_separated_paths_to_screenshot>
     OPENAI_API_KEY=<your_openai_api_key>
+    ANTHROPIC_API_KEY=<your_anthropic_api_key>
     ```
 
 ## Usage
 
 Run the main script with the desired options:
     ```shell
-    python main.py [--openai] [--mode {new,existing,clean}]
+    python main.py [--ai {openai,claude}] [--mode {new,existing,clean}]
     ```
 Options:
-- `--openai`: Use OpenAI for analysis (default is offline comparison)
+- `--ai`: Use AI for analysis (default is offline comparison)
+  - `opeanai`: Use OpenAI's GPT model for analysis
+  - `claude`: Use Anthropic's Claude for analysis
 - `--mode`: Screenshot handling mode
   - `new`: Capture new screenshots
   - `existing`: Use existing screenshots if available, otherwise capture new ones (default)
@@ -77,7 +80,7 @@ Options:
 - `src/`
   - `screenshot_capture.py`: Handles automated screenshot capture
   - `offline_comparison.py`: Performs offline screenshot comparison
-  - `openai_comparison.py`: Performs AI-powered screenshot analysis
+  - `ai_comparison.py`: Performs AI-powered screenshot analysis
   - `image_utils.py`: Utility functions for image processing
 
 ## How It Works

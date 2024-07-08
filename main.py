@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 import sys
 from src.screenshot_capture import capture_screenshots
-from src.openai_comparison import compare_screenshots_openai
+from src.ai_comparison import compare_screenshots_ai
 from src.offline_comparison import compare_screenshots_offline
 from dotenv import load_dotenv
 
@@ -27,7 +27,7 @@ def directory_is_empty(path):
 
 def main():
     parser = argparse.ArgumentParser(description="Compare screenshots with option for OpenAI analysis")
-    parser.add_argument("--openai", action="store_true", help="Use OpenAI for analysis")
+    parser.add_argument("--ai", choices=['openai', 'claude'], help="Use AI for analysis")
     parser.add_argument("--mode", choices=['new', 'existing', 'clean'], default='existing', help="Screenshot handling mode")
 
     args = parser.parse_args()
@@ -45,9 +45,10 @@ def main():
         if directory_is_empty(FOLDER_OLD) or directory_is_empty(FOLDER_NEW):
             print("Existing screenshots not found. Capturing new screenshots.")
             capture_screenshots(base_url, old_release, new_release)
+    
     try:
-        if args.openai:
-            compare_screenshots_openai(FOLDER_OLD, FOLDER_NEW)
+        if args.ai:
+            compare_screenshots_ai(FOLDER_OLD, FOLDER_NEW, args.ai)
         else:
             compare_screenshots_offline(FOLDER_OLD, FOLDER_NEW)
     except Exception as e:
