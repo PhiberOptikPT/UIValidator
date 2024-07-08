@@ -11,6 +11,9 @@ load_dotenv()
 # Set up OpenAI API key
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+MIN_HASH_DIFF=float(os.getenv("MIN_HASH_DIFF"))
+MAX_SSIM_SCORE=float(os.getenv("MAX_SSIM_SCORE"))
+
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
@@ -91,7 +94,7 @@ def compare_screenshot_pair(old_path, new_path, ai):
     List the inconsistencies in bullet points only, with no additional text.
     """
     
-    if hash_diff > 0.1 or ssim_score < 1:  # Adjust thresholds as needed
+    if hash_diff > MIN_HASH_DIFF or ssim_score < MAX_SSIM_SCORE:  # Adjust thresholds as needed
         inconsistencies = ''
 
         if ai == 'openai':

@@ -1,6 +1,9 @@
 import os
 from .image_utils import preprocess_images, compare_images_hash, compare_images_ssim, highlight_differences
 
+MIN_HASH_DIFF=float(os.getenv("MIN_HASH_DIFF"))
+MAX_SSIM_SCORE=float(os.getenv("MAX_SSIM_SCORE"))
+
 def compare_screenshot_pair_offline(old_path, new_path):
     """Compare a pair of screenshots and analyze differences offline"""
     old_img, new_img = preprocess_images(old_path, new_path)
@@ -11,7 +14,7 @@ def compare_screenshot_pair_offline(old_path, new_path):
     ssim_score, ssim_diff = compare_images_ssim(old_img, new_img)
     print(f"SSIM score for {os.path.basename(new_path)}: {ssim_score}")
     
-    if hash_diff > 0.1 or ssim_score < 1:  # Adjust thresholds as needed
+    if hash_diff > MIN_HASH_DIFF or ssim_score < MAX_SSIM_SCORE:  # Adjust thresholds as needed
         diff_img = highlight_differences(old_img, new_img, ssim_diff)
         
         diff_dir = "screenshots/diff"
