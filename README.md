@@ -1,6 +1,6 @@
 # Screenshot Comparison Tool
 
-This tool automates the process of capturing and comparing screenshots across different versions of a web application. It supports both offline comparison using image processing techniques and AI-powered analysis using OpenAI's GPT model.
+This tool automates the process of capturing and comparing screenshots across different versions of a web application. It supports both offline comparison using image processing techniques and AI-powered analysis using OpenAI's GPT model or Anthropic's Claude.
 
 ## Features
 
@@ -14,7 +14,7 @@ This tool automates the process of capturing and comparing screenshots across di
 
 - Python 3.7+
 - Chrome WebDriver (for Selenium)
-- OpenAI API key (for AI-powered analysis)
+- OpenAI and/or Claude API key (for AI-powered analysis)
 
 ## Installation
 
@@ -26,7 +26,7 @@ This tool automates the process of capturing and comparing screenshots across di
 
 2. Create and activate a Python virtual environment:
     ```shell
-    python -m venv venv
+    python3 -m venv venv
     ```
 
       On Windows:
@@ -62,8 +62,8 @@ Create a `.env` file in the project root and add the following:
 ## Usage
 
 Run the main script with the desired options:
-    ```shell
-    python main.py [--ai {openai,claude}] [--mode {new,existing,clean}]
+    ```
+    python3 main.py [--ai {openai,claude}] [--mode {new,existing,clean}]
     ```
 Options:
 - `--ai`: Use AI for analysis (default is offline comparison)
