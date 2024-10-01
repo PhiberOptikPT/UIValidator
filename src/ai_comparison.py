@@ -25,14 +25,14 @@ def call_openai(prompt, old_path, new_path):
     client = openai.OpenAI()
 
     response = openai.ChatCompletion.create(
-            model="gpt-4-turbo",
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are an experienced UX designer."},
+                {"role": "system", "content": "You are an expert UI/UX analyst."},
                 {"role": "user", "content": prompt},
                 {"role": "system", "content": f"![old_image](data:image/jpeg;base64,{old_image_base64})"},
                 {"role": "system", "content": f"![new_image](data:image/jpeg;base64,{new_image_base64})"}
             ],
-            max_tokens=300,
+            max_tokens=1000,
         )
     
     return response.choices[0].message['content']
@@ -50,11 +50,15 @@ def call_claude(prompt, old_path, new_path):
         model="claude-3-5-sonnet-20240620",
         max_tokens=1000,
         temperature=0,
-        system=prompt,
+        system="You are an expert UI/UX analyst.",
         messages=[
             {
                 "role": "user",
                 "content": [
+                    {
+                        "type": "text", 
+                        "text": prompt
+                    },
                     {
                         "type": "image",
                         "source": {
@@ -82,18 +86,36 @@ def compare_screenshot_pair(old_path, new_path, ai):
     old_img, new_img = preprocess_images(old_path, new_path)
     
     hash_diff = compare_images_hash(old_img, new_img)
-    print(f"Image hash difference for {os.path.basename(new_path)}: {hash_diff}")
+    ssim_score, _ = compare_images_ssim(old_img, new_img)  
     
-    ssim_score, _ = compare_images_ssim(old_img, new_img)
-    print(f"SSIM score for {os.path.basename(new_path)}: {ssim_score}")
+    filename = os.path.basename(new_path)
+    print(f"Comparing {filename}: Hash diff = {hash_diff:.4f}, SSIM score = {ssim_score:.4f}")
 
-    prompt = """
-    Please analyse the attached images of two screens, one old and one new. 
-    Enumerate the UI inconsistencies present in the new image that are not in the old image. 
-    List the inconsistencies in bullet points only, with no additional text.
-    """
-    
     if hash_diff > MIN_HASH_DIFF or ssim_score < MAX_SSIM_SCORE:  # Adjust thresholds as needed
+        prompt = """
+        Analyze the two attached screenshots: the first is the old version, the second is the new version.
+        Focus on identifying UI changes and potential inconsistencies in the modernized version, paying particular attention to:
+
+        1. Component positioning changes
+        2. Spacing differences between components
+        3. Alignment and spacing of labels relative to their associated elements
+        4. Consistency in styling (colors, fonts, sizes) across similar elements
+        5. Changes in element sizes or proportions
+        6. Alterations in visual hierarchy or emphasis
+        7. Modifications to navigation elements or user flow
+        8. Consistency of modernized elements across different parts of the interface
+
+        Please provide your analysis in the following format:
+        1. List of Changes:
+        - [List each significant change or inconsistency, focusing on the aspects mentioned above]
+        2. Impact Assessment:
+        - [Briefly assess the potential impact on user experience for each change]
+        3. Recommendations:
+        - [Provide any recommendations for improvement or maintaining consistency]
+
+        Be concise and focus on the most important aspects. Ignore minor pixel-level differences unless they significantly impact the overall design consistency.
+        """
+    
         inconsistencies = ''
 
         if ai == 'openai':
@@ -101,20 +123,20 @@ def compare_screenshot_pair(old_path, new_path, ai):
         elif ai == 'claude':
             inconsistencies = call_claude(prompt, old_path, new_path)
 
-        filename = os.path.basename(new_path)
-
         write_comparison_results(filename, hash_diff, ssim_score, inconsistencies)
         print(f"UI Inconsistencies found for {filename}!")
+    else:
+        write_comparison_results(filename, hash_diff, ssim_score)
 
 def write_comparison_results(filename, hash_diff, ssim_score, inconsistencies=None):
     """Write comparison results to a file"""
-    with open(f"screenshots/diff/{filename}.txt", 'a') as f:
-        f.write(f"Results for {filename}:\n")
+    with open(f"screenshots/diff/{filename}.txt", 'w') as f:
+        f.write(f"Analysis for {filename}:\n")
         f.write(f"Image hash difference: {hash_diff}\n")
         f.write(f"SSIM score: {ssim_score}\n")
         
         if inconsistencies:
-            f.write("UI Inconsistencies:\n")
+            f.write("AI Analysis:\n")
             f.write(inconsistencies)
             f.write("\n")
         else:
