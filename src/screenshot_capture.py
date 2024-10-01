@@ -1,9 +1,12 @@
 import os
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 from urllib.parse import urljoin
 
@@ -21,14 +24,25 @@ def setup_driver():
     """Set up and return a configured Chrome WebDriver"""
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # Run in headless mode (no GUI)
+    chrome_options.add_argument("--disable-gpu")  # Disable GPU hardware acceleration
+    chrome_options.add_argument("--no-sandbox")  # Bypass OS security model
+    chrome_options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
     chrome_options.add_argument("--window-size=1920,1080")
-    return webdriver.Chrome(options=chrome_options)
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--hide-scrollbars")
+    chrome_options.add_argument("--enable-logging")
+    chrome_options.add_argument("--v=1")  # Verbose logging
+    # Add user agent to mimic a real browser
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    # Use webdriver_manager to automatically download and use the correct ChromeDriver version
+    service = Service(ChromeDriverManager().install())
+    return webdriver.Chrome(service=service, options=chrome_options)
 
 def login(base_url, driver):
     driver.get(urljoin(base_url, "master/portal/"))
 
     # Wait for username field and enter username
-    username_field = WebDriverWait(driver, 10).until(
+    username_field = WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.ID, "username"))
     )
     username_field.send_keys(USERNAME)
@@ -42,7 +56,7 @@ def login(base_url, driver):
     login_button.click()
 
     # Wait for login to complete (adjust the selector as needed)
-    WebDriverWait(driver, 10).until(
+    WebDriverWait(driver, 30).until(
         EC.presence_of_element_located((By.ID, "sigma_main_panel"))
     )
 
@@ -55,11 +69,14 @@ def get_filename_from_path(path):
 def take_screenshot(driver, url, dir, filename):
     """Navigate to URL and take a screenshot"""
     driver.get(url)
-    
+
     # Wait for page to load (adjust the selector as needed)
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.TAG_NAME, "body"))
     )
+
+    #Wait for eventual spinner to disappear
+    time.sleep(10)
 
     # Take screenshot
     driver.save_screenshot(f"{dir}/{filename}")

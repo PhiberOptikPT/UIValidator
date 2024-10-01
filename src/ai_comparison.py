@@ -3,8 +3,7 @@ import base64
 import os
 import openai
 from dotenv import load_dotenv
-from src.image_utils import preprocess_images, compare_images_hash, compare_images_ssim
-
+from src.image_utils import compare_images_hash, compare_images_ssim, preprocess_images
 # Load environment variables
 load_dotenv()
 
@@ -28,7 +27,7 @@ def call_openai(prompt, old_path, new_path):
     response = openai.ChatCompletion.create(
             model="gpt-4-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are an experienced UX designer."},
                 {"role": "user", "content": prompt},
                 {"role": "system", "content": f"![old_image](data:image/jpeg;base64,{old_image_base64})"},
                 {"role": "system", "content": f"![new_image](data:image/jpeg;base64,{new_image_base64})"}
